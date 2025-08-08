@@ -1,0 +1,59 @@
+name: CI (Windows)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    env:
+      VCPKG_ROOT: C:\vcpkg
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSVC Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install CMake and Ninja
+        uses: lukka/get-cmake@v3.30.3
+
+      - name: Install Git-LFS (for any large vendor content)
+        run: git lfs install
+
+      - name: Setup Premake
+        shell: pwsh
+        run: |
+          ./scripts/download_premake.ps1
+
+      - name: Install dependencies (SDL3, ImGui, doctest, etc.)
+        shell: pwsh
+        run: |
+          ./scripts/install_deps.ps1
+
+      - name: Generate VS solution
+        shell: pwsh
+        run: |
+          ./tools/premake5.exe vs2022
+
+      - name: Build (Debug x64)
+        shell: pwsh
+        run: |
+          $msbuild = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
+          if (-not (Test-Path $msbuild)) { $msbuild = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" }
+          if (-not (Test-Path $msbuild)) { $msbuild = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" }
+          & $msbuild Limitless.sln /m /p:Configuration=Debug /p:Platform=x64
+
+      - name: Run tests (if any)
+        shell: pwsh
+        run: |
+          if (Test-Path "Build/debug_x64-windows-x64/Test/Test.exe") {
+            & "Build/debug_x64-windows-x64/Test/Test.exe" | Out-Host
+          } else {
+            Write-Host "Test executable not found; skipping"
+          }
+
+

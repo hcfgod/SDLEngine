@@ -11,6 +11,13 @@ tools/
 .vscode/
 *.swp
 *.swo
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.vcxproj.user.props
+*.vcxproj.user.targets
+*.vcxproj.user.props
 *~
 
 # OS generated files
@@ -58,3 +65,11 @@ CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
 Makefile
+
+# Additional engine/build outputs
+Build/
+Sandbox/Logs/
+*.opendb
+*.VC.db
+*.suo
+*.userosscache
