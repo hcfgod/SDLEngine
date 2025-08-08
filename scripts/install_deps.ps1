@@ -309,6 +309,7 @@ function Build-SDL3-FromSource {
         (Join-Path $installPrefix 'lib64\SDL3-static.lib'),
         (Join-Path $bld 'Release\SDL3-static.lib'),
         (Join-Path $bld 'Release\SDL3.lib')
+    )
     $found = $false
     foreach ($c in $candidates) {
         if (Test-Path $c) {
