@@ -41,15 +41,14 @@ PREMAKE_VERSION=$VERSION
 PREMAKE_PLATFORM=$PLATFORM
 
 # Download URL for Premake
-if [ "$PLATFORM" = "macos" ]; then
-    DOWNLOAD_URL="https://github.com/premake/premake-core/releases/download/v$PREMAKE_VERSION/premake-$PREMAKE_VERSION-macos.tar.gz"
-    ARCHIVE_PATH="tools/premake-$PREMAKE_VERSION-macos.tar.gz"
-    EXTRACT_PATH="tools/premake"
-else
-    DOWNLOAD_URL="https://github.com/premake/premake-core/releases/download/v$PREMAKE_VERSION/premake-$PREMAKE_VERSION-linux.tar.gz"
-    ARCHIVE_PATH="tools/premake-$PREMAKE_VERSION-linux.tar.gz"
-    EXTRACT_PATH="tools/premake"
+# Note: premake release asset names use 'macosx' (not 'macos')
+ASSET_PLATFORM="$PREMAKE_PLATFORM"
+if [ "$PREMAKE_PLATFORM" = "macos" ]; then
+    ASSET_PLATFORM="macosx"
 fi
+DOWNLOAD_URL="https://github.com/premake/premake-core/releases/download/v$PREMAKE_VERSION/premake-$PREMAKE_VERSION-$ASSET_PLATFORM.tar.gz"
+ARCHIVE_PATH="tools/premake-$PREMAKE_VERSION-$ASSET_PLATFORM.tar.gz"
+EXTRACT_PATH="tools/premake_extract"
 
 echo "Downloading Premake v$PREMAKE_VERSION for $PLATFORM..."
 
@@ -72,8 +71,14 @@ echo "Download completed successfully!"
 
 # Extract the archive
 echo "Extracting Premake..."
+rm -rf "$EXTRACT_PATH"
 mkdir -p "$EXTRACT_PATH"
-tar -xzf "$ARCHIVE_PATH" -C "$EXTRACT_PATH"
+if ! tar -xzf "$ARCHIVE_PATH" -C "$EXTRACT_PATH"; then
+    echo "Failed to extract Premake!"
+    file "$ARCHIVE_PATH" || true
+    echo "Downloaded file size: $(wc -c < "$ARCHIVE_PATH" 2>/dev/null || echo 0) bytes"
+    exit 1
+fi
 
 if [ $? -ne 0 ]; then
     echo "Failed to extract Premake!"
@@ -83,13 +88,15 @@ fi
 echo "Extraction completed!"
 
 # Move premake5 to tools directory
-PREMAKE_BIN="$EXTRACT_PATH/premake5"
-if [ -f "$PREMAKE_BIN" ]; then
+PREMAKE_BIN=$(find "$EXTRACT_PATH" -type f -name premake5 | head -n1)
+if [ -n "$PREMAKE_BIN" ] && [ -f "$PREMAKE_BIN" ]; then
     cp "$PREMAKE_BIN" "tools/premake5"
     chmod +x "tools/premake5"
     echo "Premake5 copied to tools directory!"
 else
     echo "Premake5 not found in extracted files!"
+    echo "Contents of extract dir:"
+    find "$EXTRACT_PATH" -maxdepth 2 -type f | sed 's/^/  /'
     exit 1
 fi
 
