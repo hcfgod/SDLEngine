@@ -198,8 +198,14 @@ function Try-Install-SDL3-Package {
 
 function Build-SDL3-FromSource {
     $installPrefix = Join-Path $VendorDir 'SDL3'
-    if ((Test-Path (Join-Path $installPrefix 'include/SDL3')) -and (-not $Force)) {
-        Write-Log 'SDL3 already present'
+    # Only skip if headers AND at least one library file exist
+    $headersPresent = Test-Path (Join-Path $installPrefix 'include/SDL3')
+    $libDir = Join-Path $installPrefix 'lib'
+    $libStatic = Join-Path $libDir 'SDL3-static.lib'
+    $libShared = Join-Path $libDir 'SDL3.lib'
+    $libAltRelease = Join-Path $installPrefix 'lib\Release\SDL3-static.lib'
+    if ($headersPresent -and ((Test-Path $libStatic) -or (Test-Path $libShared) -or (Test-Path $libAltRelease)) -and (-not $Force)) {
+        Write-Log 'SDL3 headers and libraries already present'
         return
     }
     if (-not (Test-Cmd cmake)) { throw 'CMake is required to build SDL3 from source' }
@@ -228,6 +234,21 @@ function Build-SDL3-FromSource {
     & cmake --build $bld --config Release --parallel
     & cmake --install $bld --config Release
     Write-Log "SDL3 installed locally → $installPrefix"
+
+    # Flatten library location for MSBuild libdirs expectations
+    $libDir = Join-Path $installPrefix 'lib'
+    $relStatic = Join-Path $libDir 'Release\SDL3-static.lib'
+    $relShared = Join-Path $libDir 'Release\SDL3.lib'
+    $rootStatic = Join-Path $libDir 'SDL3-static.lib'
+    $rootShared = Join-Path $libDir 'SDL3.lib'
+    if ((Test-Path $relStatic) -and -not (Test-Path $rootStatic)) {
+        Copy-Item -Path $relStatic -Destination $rootStatic -Force
+        Write-Log "Flattened SDL3-static.lib to $rootStatic"
+    }
+    if ((Test-Path $relShared) -and -not (Test-Path $rootShared)) {
+        Copy-Item -Path $relShared -Destination $rootShared -Force
+        Write-Log "Flattened SDL3.lib to $rootShared"
+    }
 }
 
 function Install-SDL3 {

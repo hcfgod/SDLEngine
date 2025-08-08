@@ -32,7 +32,7 @@ jobs:
         shell: pwsh
         run: |
           ./scripts/download_premake.ps1
-          ./scripts/install_deps.ps1
+          ./scripts/install_deps.ps1 -Force
 
       - name: Generate VS solution
         shell: pwsh
@@ -43,6 +43,12 @@ jobs:
         shell: pwsh
         run: |
           msbuild Limitless.sln /m /p:Configuration=Debug /p:Platform=x64
+
+      - name: List SDL libs (debugging)
+        if: ${{ failure() }}
+        shell: pwsh
+        run: |
+          Get-ChildItem -Recurse Engine/Vendor/SDL3 | ForEach-Object { $_.FullName }
 
       - name: Run tests
         shell: pwsh
