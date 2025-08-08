@@ -241,6 +241,13 @@ function Try-Install-SDL3-Package {
 
 function Build-SDL3-FromSource {
     $installPrefix = Join-Path $VendorDir 'SDL3'
+    # If forcing or if a MinGW archive (.a) exists, clear out to avoid mixing incompatible libs
+    if ($Force -or (Test-Path (Join-Path $installPrefix 'lib/libSDL3.a'))) {
+        if (Test-Path $installPrefix) {
+            Write-Log "Removing existing SDL3 install at $installPrefix (Force or incompatible archive detected)"
+            Remove-Item -Recurse -Force $installPrefix
+        }
+    }
     # Only skip if headers AND at least one library file exist
     $headersPresent = Test-Path (Join-Path $installPrefix 'include/SDL3')
     $libDir = Join-Path $installPrefix 'lib'
@@ -267,13 +274,8 @@ function Build-SDL3-FromSource {
     New-Item -ItemType Directory -Force -Path $bld | Out-Null
 
     $cmakePrefix = ($installPrefix -replace '\\','/')
-    # Prefer Ninja on CI for a deterministic x64 build
-    $generator = 'Ninja Multi-Config'
-    if (-not (Get-Command ninja -ErrorAction SilentlyContinue)) {
-        $generator = 'Visual Studio 17 2022'
-    }
-    $generatorArgs = @()
-    if ($generator -eq 'Visual Studio 17 2022') { $generatorArgs += @('-G', 'Visual Studio 17 2022', '-A', 'x64') } else { $generatorArgs += @('-G', $generator) }
+    # Use Visual Studio generator explicitly to guarantee MSVC .lib outputs
+    $generatorArgs = @('-G', 'Visual Studio 17 2022', '-A', 'x64', '-T', 'v143')
 
     & cmake -S $srcDir.FullName -B $bld `
         @generatorArgs `
@@ -286,11 +288,7 @@ function Build-SDL3-FromSource {
         "-DCMAKE_INSTALL_PREFIX:PATH=$cmakePrefix"
     if ($LASTEXITCODE -ne 0) { throw 'CMake configure failed' }
 
-    if ($generator -eq 'Ninja Multi-Config') {
-        & cmake --build $bld --config Release --parallel
-    } else {
-        & cmake --build $bld --config Release --parallel
-    }
+    & cmake --build $bld --config Release --parallel
     if ($LASTEXITCODE -ne 0) { throw 'CMake build failed' }
 
     # Try to find built libs in the build tree (Visual Studio generators often place them under $bld/Release)

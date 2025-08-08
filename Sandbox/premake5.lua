@@ -4,6 +4,26 @@ project "Sandbox"
     cppdialect "C++20"
     staticruntime "off"
 
+    -- Vendor roots (used to detect proper SDL3 lib name)
+    local VendorDir    = path.getabsolute("%{wks.location}/Engine/Vendor")
+    local SDL3Include  = VendorDir .. "/SDL3/include"
+    local SDL3LibDir   = VendorDir .. "/SDL3/lib"
+    if not os.isdir(SDL3LibDir) and os.isdir(VendorDir .. "/SDL3/lib64") then
+        SDL3LibDir = VendorDir .. "/SDL3/lib64"
+    end
+    local SDL3LibName = nil
+    if os.isfile(SDL3LibDir .. "/SDL3-static.lib") then
+        SDL3LibName = "SDL3-static"
+    elseif os.isfile(SDL3LibDir .. "/SDL3.lib") then
+        SDL3LibName = "SDL3"
+    elseif os.isfile(SDL3LibDir .. "/libSDL3.a") then
+        -- MinGW archive; MSVC can't use this, but keep a fallback name for non-MSVC toolchains
+        SDL3LibName = "SDL3"
+    else
+        -- Default to SDL3; installer should ensure SDL3-static.lib exists on Windows CI
+        SDL3LibName = "SDL3"
+    end
+
     targetdir ("%{wks.location}/" .. outputdir .. "/%{prj.name}")
     objdir ("%{wks.location}/" .. outputdir .. "/%{prj.name}")
 
@@ -20,7 +40,7 @@ project "Sandbox"
         "%{wks.location}/Engine/Vendor/doctest",
         "%{wks.location}/Engine/Vendor/spdlog",
         "%{wks.location}/Engine/Vendor/imgui",
-        "%{wks.location}/Engine/Vendor/SDL3/include",
+        SDL3Include,
     }
 
     libdirs
@@ -46,8 +66,7 @@ project "Sandbox"
         {
             "LM_PLATFORM_WINDOWS",
         }
-        -- Link SDL3 (static) and required Windows system libs
-        links { "SDL3-static", "user32", "gdi32", "winmm", "imm32", "setupapi", "version", "ole32", "oleaut32", "uuid", "shell32", "advapi32" }
+        links { SDL3LibName, "user32", "gdi32", "winmm", "imm32", "setupapi", "version", "ole32", "oleaut32", "uuid", "shell32", "advapi32" }
         buildoptions { "/utf-8" }
 
     filter "system:linux"
