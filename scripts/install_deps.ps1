@@ -127,6 +127,49 @@ function Install-ImGuiDocking {
     if (Test-Path $dstDir) { Remove-Item -Recurse -Force $dstDir }
     Move-Item $srcDir.FullName $dstDir
     Write-Log "imgui (docking) installed → $dstDir"
+
+    # Ensure a premake5.lua exists for building ImGui as a static library
+    $premakePath = Join-Path $dstDir 'premake5.lua'
+    $premakeContent = @'
+project "ImGui"
+    kind "StaticLib"
+    language "C++"
+    cppdialect "C++17"
+    staticruntime "off"
+
+    targetdir ("%{wks.location}/" .. outputdir .. "/%{prj.name}")
+    objdir ("%{wks.location}/" .. outputdir .. "/%{prj.name}")
+
+    files {
+        "imgui.cpp",
+        "imgui_demo.cpp",
+        "imgui_draw.cpp",
+        "imgui_tables.cpp",
+        "imgui_widgets.cpp",
+        "misc/cpp/imgui_stdlib.cpp"
+    }
+
+    includedirs { ".", "misc/cpp" }
+
+    filter "system:windows"
+        systemversion "latest"
+        defines { "_CRT_SECURE_NO_WARNINGS" }
+        buildoptions { "/utf-8" }
+
+    filter "configurations:Debug"
+        runtime "Debug"
+        symbols "on"
+
+    filter "configurations:Release"
+        runtime "Release"
+        optimize "on"
+
+    filter "configurations:Dist"
+        runtime "Release"
+        optimize "on"
+'@
+    Set-Content -LiteralPath $premakePath -Value $premakeContent -Encoding UTF8
+    Write-Log "Wrote ImGui premake at $premakePath"
 }
 
 function Install-NlohmannJson {
