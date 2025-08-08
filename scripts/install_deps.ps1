@@ -267,30 +267,61 @@ function Build-SDL3-FromSource {
     New-Item -ItemType Directory -Force -Path $bld | Out-Null
 
     $cmakePrefix = ($installPrefix -replace '\\','/')
+    # Generate VS2022 x64 project to avoid Win32 default
     & cmake -S $srcDir.FullName -B $bld `
+        -G "Visual Studio 17 2022" `
+        -A x64 `
         -DCMAKE_BUILD_TYPE=Release `
         -DBUILD_SHARED_LIBS=OFF `
         -DSDL_SHARED=OFF `
         -DSDL_STATIC=ON `
+        -DSDL_TESTS=OFF `
         -DSDL_TEST=OFF `
         "-DCMAKE_INSTALL_PREFIX:PATH=$cmakePrefix"
+    if ($LASTEXITCODE -ne 0) { throw 'CMake configure failed' }
+
     & cmake --build $bld --config Release --parallel
+    if ($LASTEXITCODE -ne 0) { throw 'CMake build failed' }
+
+    # Try to find built libs in the build tree (Visual Studio generators often place them under $bld/Release)
+    $builtLibs = Get-ChildItem -Recurse -ErrorAction SilentlyContinue $bld | Where-Object { $_.Name -match '^SDL3(-static)?\.lib$' }
+    if ($builtLibs.Count -gt 0) {
+        $libOutDir = Join-Path $installPrefix 'lib'
+        New-Item -ItemType Directory -Force -Path $libOutDir | Out-Null
+        foreach ($lib in $builtLibs) {
+            $dest = Join-Path $libOutDir $lib.Name
+            Copy-Item -Path $lib.FullName -Destination $dest -Force
+            Write-Log "Copied built lib to $dest"
+        }
+    }
+
     & cmake --install $bld --config Release
+    if ($LASTEXITCODE -ne 0) { throw 'CMake install failed' }
     Write-Log "SDL3 installed locally → $installPrefix"
 
     # Flatten library location for MSBuild libdirs expectations
     $libDir = Join-Path $installPrefix 'lib'
-    $relStatic = Join-Path $libDir 'Release\SDL3-static.lib'
-    $relShared = Join-Path $libDir 'Release\SDL3.lib'
-    $rootStatic = Join-Path $libDir 'SDL3-static.lib'
-    $rootShared = Join-Path $libDir 'SDL3.lib'
-    if ((Test-Path $relStatic) -and -not (Test-Path $rootStatic)) {
-        Copy-Item -Path $relStatic -Destination $rootStatic -Force
-        Write-Log "Flattened SDL3-static.lib to $rootStatic"
+    New-Item -ItemType Directory -Force -Path $libDir | Out-Null
+    $candidates = @(
+        (Join-Path $installPrefix 'lib\SDL3-static.lib'),
+        (Join-Path $installPrefix 'lib\SDL3.lib'),
+        (Join-Path $installPrefix 'lib\Release\SDL3-static.lib'),
+        (Join-Path $installPrefix 'lib64\SDL3-static.lib'),
+        (Join-Path $bld 'Release\SDL3-static.lib'),
+        (Join-Path $bld 'Release\SDL3.lib')
+    $found = $false
+    foreach ($c in $candidates) {
+        if (Test-Path $c) {
+            $target = Join-Path $libDir 'SDL3-static.lib'
+            Copy-Item -Path $c -Destination $target -Force
+            Write-Log "Ensured SDL3-static.lib at $target (from $c)"
+            $found = $true
+            break
+        }
     }
-    if ((Test-Path $relShared) -and -not (Test-Path $rootShared)) {
-        Copy-Item -Path $relShared -Destination $rootShared -Force
-        Write-Log "Flattened SDL3.lib to $rootShared"
+    if (-not $found) {
+        Write-Log 'Warning: SDL3-static.lib not found after install; listing contents'
+        Get-ChildItem -Recurse $installPrefix | ForEach-Object { $_.FullName }
     }
 }
 
@@ -311,5 +342,3 @@ Install-SDL3
 Install-NlohmannJson
 Install-GLM
 Write-Log 'All dependencies installed'
-
-
