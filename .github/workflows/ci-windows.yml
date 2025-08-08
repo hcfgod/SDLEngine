@@ -48,7 +48,7 @@ jobs:
           msbuild Limitless.sln /m /p:Configuration=Debug /p:Platform=x64
 
       - name: List SDL libs (debugging)
-        if: ${{ failure() }}
+        if: ${{ always() }}
         shell: pwsh
         run: |
           Get-ChildItem -Recurse Engine/Vendor/SDL3 | ForEach-Object { $_.FullName }

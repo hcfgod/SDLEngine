@@ -27,7 +27,8 @@ project "Test"
     libdirs
     {
         "%{wks.location}/Engine/Vendor/SDL3/lib",
-        "%{wks.location}/Engine/Vendor/SDL3/lib64"
+        "%{wks.location}/Engine/Vendor/SDL3/lib64",
+        "%{wks.location}/Engine/Vendor/SDL3/lib/Release"
     }
 
     links

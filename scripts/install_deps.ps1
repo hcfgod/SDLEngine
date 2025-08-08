@@ -282,6 +282,7 @@ function Build-SDL3-FromSource {
         -DSDL_STATIC=ON `
         -DSDL_TESTS=OFF `
         -DSDL_TEST=OFF `
+        -DCMAKE_INSTALL_LIBDIR=lib `
         "-DCMAKE_INSTALL_PREFIX:PATH=$cmakePrefix"
     if ($LASTEXITCODE -ne 0) { throw 'CMake configure failed' }
 

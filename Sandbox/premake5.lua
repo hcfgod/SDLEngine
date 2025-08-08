@@ -26,13 +26,18 @@ project "Sandbox"
     libdirs
     {
         "%{wks.location}/Engine/Vendor/SDL3/lib",
-        "%{wks.location}/Engine/Vendor/SDL3/lib64"
+        "%{wks.location}/Engine/Vendor/SDL3/lib64",
+        -- VS generators sometimes place libs under a config subdir
+        "%{wks.location}/Engine/Vendor/SDL3/lib/Release"
     }
 
     links
     {
         "Engine",
-        "ImGui"
+        "ImGui",
+        -- Ensure SDL3-static is linked explicitly on Windows
+        -- (Linux/macOS link via system libs in platform filters below)
+        
     }
 
     filter "system:windows"
