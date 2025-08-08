@@ -267,11 +267,16 @@ function Build-SDL3-FromSource {
     New-Item -ItemType Directory -Force -Path $bld | Out-Null
 
     $cmakePrefix = ($installPrefix -replace '\\','/')
-    # Generate VS2022 x64 project to avoid Win32 default
+    # Prefer Ninja on CI for a deterministic x64 build
+    $generator = 'Ninja Multi-Config'
+    if (-not (Get-Command ninja -ErrorAction SilentlyContinue)) {
+        $generator = 'Visual Studio 17 2022'
+    }
+    $generatorArgs = @()
+    if ($generator -eq 'Visual Studio 17 2022') { $generatorArgs += @('-G', 'Visual Studio 17 2022', '-A', 'x64') } else { $generatorArgs += @('-G', $generator) }
+
     & cmake -S $srcDir.FullName -B $bld `
-        -G "Visual Studio 17 2022" `
-        -A x64 `
-        -DCMAKE_BUILD_TYPE=Release `
+        @generatorArgs `
         -DBUILD_SHARED_LIBS=OFF `
         -DSDL_SHARED=OFF `
         -DSDL_STATIC=ON `
@@ -280,11 +285,15 @@ function Build-SDL3-FromSource {
         "-DCMAKE_INSTALL_PREFIX:PATH=$cmakePrefix"
     if ($LASTEXITCODE -ne 0) { throw 'CMake configure failed' }
 
-    & cmake --build $bld --config Release --parallel
+    if ($generator -eq 'Ninja Multi-Config') {
+        & cmake --build $bld --config Release --parallel
+    } else {
+        & cmake --build $bld --config Release --parallel
+    }
     if ($LASTEXITCODE -ne 0) { throw 'CMake build failed' }
 
     # Try to find built libs in the build tree (Visual Studio generators often place them under $bld/Release)
-    $builtLibs = Get-ChildItem -Recurse -ErrorAction SilentlyContinue $bld | Where-Object { $_.Name -match '^SDL3(-static)?\.lib$' }
+    $builtLibs = Get-ChildItem -Recurse -ErrorAction SilentlyContinue $bld | Where-Object { $_.Name -match '^SDL3(-static)?\.lib$' -or $_.Name -eq 'SDL3.lib' -or $_.Name -eq 'SDL3-static.lib' }
     if ($builtLibs.Count -gt 0) {
         $libOutDir = Join-Path $installPrefix 'lib'
         New-Item -ItemType Directory -Force -Path $libOutDir | Out-Null
