@@ -155,7 +155,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL3-static.lib;user32.lib;gdi32.lib;winmm.lib;imm32.lib;setupapi.lib;version.lib;ole32.lib;oleaut32.lib;uuid.lib;shell32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL3.lib;user32.lib;gdi32.lib;winmm.lib;imm32.lib;setupapi.lib;version.lib;ole32.lib;oleaut32.lib;uuid.lib;shell32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\Engine\Vendor\SDL3\lib;..\Engine\Vendor\SDL3\lib64;..\Engine\Vendor\SDL3\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -177,7 +177,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL3-static.lib;user32.lib;gdi32.lib;winmm.lib;imm32.lib;setupapi.lib;version.lib;ole32.lib;oleaut32.lib;uuid.lib;shell32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL3.lib;user32.lib;gdi32.lib;winmm.lib;imm32.lib;setupapi.lib;version.lib;ole32.lib;oleaut32.lib;uuid.lib;shell32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\Engine\Vendor\SDL3\lib;..\Engine\Vendor\SDL3\lib64;..\Engine\Vendor\SDL3\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -204,7 +204,7 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL3-static.lib;user32.lib;gdi32.lib;winmm.lib;imm32.lib;setupapi.lib;version.lib;ole32.lib;oleaut32.lib;uuid.lib;shell32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL3.lib;user32.lib;gdi32.lib;winmm.lib;imm32.lib;setupapi.lib;version.lib;ole32.lib;oleaut32.lib;uuid.lib;shell32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\Engine\Vendor\SDL3\lib;..\Engine\Vendor\SDL3\lib64;..\Engine\Vendor\SDL3\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -231,7 +231,7 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL3-static.lib;user32.lib;gdi32.lib;winmm.lib;imm32.lib;setupapi.lib;version.lib;ole32.lib;oleaut32.lib;uuid.lib;shell32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL3.lib;user32.lib;gdi32.lib;winmm.lib;imm32.lib;setupapi.lib;version.lib;ole32.lib;oleaut32.lib;uuid.lib;shell32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\Engine\Vendor\SDL3\lib;..\Engine\Vendor\SDL3\lib64;..\Engine\Vendor\SDL3\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -258,7 +258,7 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL3-static.lib;user32.lib;gdi32.lib;winmm.lib;imm32.lib;setupapi.lib;version.lib;ole32.lib;oleaut32.lib;uuid.lib;shell32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL3.lib;user32.lib;gdi32.lib;winmm.lib;imm32.lib;setupapi.lib;version.lib;ole32.lib;oleaut32.lib;uuid.lib;shell32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\Engine\Vendor\SDL3\lib;..\Engine\Vendor\SDL3\lib64;..\Engine\Vendor\SDL3\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -285,7 +285,7 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL3-static.lib;user32.lib;gdi32.lib;winmm.lib;imm32.lib;setupapi.lib;version.lib;ole32.lib;oleaut32.lib;uuid.lib;shell32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL3.lib;user32.lib;gdi32.lib;winmm.lib;imm32.lib;setupapi.lib;version.lib;ole32.lib;oleaut32.lib;uuid.lib;shell32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\Engine\Vendor\SDL3\lib;..\Engine\Vendor\SDL3\lib64;..\Engine\Vendor\SDL3\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>

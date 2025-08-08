@@ -1,0 +1,64 @@
+name: CI (Windows)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  build-windows:
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache vendor and tools
+        uses: actions/cache@v4
+        with:
+          path: |
+            Engine/Vendor
+            tools/premake5.exe
+          key: ${{ runner.os }}-deps-${{ hashFiles('scripts/install_deps.ps1', 'scripts/download_premake.ps1') }}
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+        with:
+          vs-version: '[17.0,)' # VS 2022
+
+      - name: Download Premake
+        shell: pwsh
+        run: |
+          ./scripts/download_premake.ps1
+
+      - name: Install dependencies (SDL3, ImGui, spdlog, doctest, nlohmann, glm)
+        shell: pwsh
+        run: |
+          ./scripts/install_deps.ps1
+
+      - name: Generate Visual Studio solution (vs2022)
+        shell: pwsh
+        run: |
+          ./tools/premake5.exe vs2022
+
+      - name: Build (Debug x64)
+        shell: pwsh
+        run: |
+          msbuild Limitless.sln /m /p:Configuration=Debug /p:Platform=x64
+
+      - name: Run tests
+        shell: pwsh
+        run: |
+          $testPath = Join-Path $PWD 'Build/Debug-windows-x64/Test/Test.exe'
+          if (Test-Path $testPath) { & $testPath } else { Write-Host "Test binary not found: $testPath" }
+
+      - name: Upload artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-Debug-x64
+          path: |
+            Build/Debug-windows-x64/**
+
+

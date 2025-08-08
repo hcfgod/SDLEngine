@@ -322,8 +322,13 @@ function Build-SDL3-FromSource {
     foreach ($c in $candidates) {
         if (Test-Path $c) {
             $target = Join-Path $libDir 'SDL3-static.lib'
-            Copy-Item -Path $c -Destination $target -Force
-            Write-Log "Ensured SDL3-static.lib at $target (from $c)"
+            # Avoid copying a file onto itself when the candidate already is the target
+            if ((-not (Test-Path $target)) -or ((Get-Item $c).FullName -ne (Get-Item $target).FullName)) {
+                Copy-Item -Path $c -Destination $target -Force
+                Write-Log "Ensured SDL3-static.lib at $target (from $c)"
+            } else {
+                Write-Log "SDL3-static.lib already in place at $target"
+            }
             $found = $true
             break
         }
