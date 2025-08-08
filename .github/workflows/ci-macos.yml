@@ -17,7 +17,7 @@ jobs:
       - name: Install prerequisites
         run: |
           brew update
-          brew install cmake ninja pkg-config
+          brew install cmake ninja pkg-config premake
 
       - name: Cache vendor and tools
         uses: actions/cache@v4
@@ -27,17 +27,14 @@ jobs:
             tools/premake5
           key: ${{ runner.os }}-deps-${{ hashFiles('scripts/install_deps.sh', 'scripts/download_premake.sh') }}
 
-      - name: Setup project (deps + premake)
+      - name: Setup project (deps)
         run: |
-          chmod +x scripts/download_premake.sh
-          ./scripts/download_premake.sh
           chmod +x scripts/install_deps.sh
           ./scripts/install_deps.sh
 
       - name: Generate Makefiles
         run: |
-          chmod +x tools/premake5
-          ./tools/premake5 gmake2
+          premake5 gmake2
 
       - name: Build (Debug x64)
         run: |

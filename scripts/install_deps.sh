@@ -206,9 +206,12 @@ install_glm() {
 
 build_sdl3_from_source() {
   local install_prefix="$VENDOR_DIR/SDL3"
-  if [[ -d "$install_prefix/include/SDL3" || -f "$VENDOR_DIR/SDL3.PACKAGE_MANAGER" ]]; then
-    log "SDL3 already present"
-    return 0
+  # Only skip if headers and at least one library file exist
+  if [[ -d "$install_prefix/include/SDL3" ]]; then
+    if [[ -f "$install_prefix/lib/SDL3-static.lib" || -f "$install_prefix/lib/SDL3.lib" || -f "$install_prefix/lib/libSDL3.a" || -f "$install_prefix/lib/libSDL3.so" || -f "$install_prefix/lib/libSDL3.dylib" ]]; then
+      log "SDL3 headers and libraries already present"
+      return 0
+    fi
   fi
 
   log "Building SDL3 from source ($SDL3_VERSION)"
